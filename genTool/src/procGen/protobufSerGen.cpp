@@ -81,6 +81,8 @@ elseif (WIN32)
 	file(GLOB defS src/*.def)
 endif ()
 	include_directories(
+    ${firstBuildDir}/include/firstBuild
+    ${appFrameDir}/include/appFrame
 )";
 
 	auto& rGlobalFile = tSingleton<globalFile>::single ();
@@ -90,9 +92,9 @@ endif ()
 )";
 	}
     
-	os<<appFrameInstall<<R"(/include/appFrame
+	os<<R"(
 )
-list(APPEND libPath )"<<appFrameInstall<<R"(/lib)
+list(APPEND libPath ${firstBuildDir}/lib ${appFrameDir}/lib)
 link_directories(${libPath} ${libDep})
 	add_library(${prjName} SHARED  ${defS} ${srcS} ${pbSrcS} )
 if (WIN32)

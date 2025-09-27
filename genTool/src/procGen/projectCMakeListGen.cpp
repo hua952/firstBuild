@@ -70,8 +70,27 @@ endif ()
 
 set (myProjectName )"<<szPrjName <<R"()
 project(${myProjectName})
-set (firstBuildInc )"<<frameInstallDir<<R"(/include/appFrame  CACHE INTERNAL "Shared variable")
-set (firstBuildLib )"<<frameInstallDir<<R"(/lib  CACHE INTERNAL "Shared variable")
+
+set(firstBuildDirDef ${CMAKE_SOURCE_DIR}/../../firstBuildInstall)
+
+if(DEFINED ENV{firstBuildDir})
+    set(firstBuildDirDef "$ENV{firstBuildDir}")
+endif()
+
+set(firstBuildDir "${firstBuildDirDef}" CACHE PATH "Path of firstBuild install")
+
+message(STATUS "最终firstBuildDir是: ${firstBuildDir}")
+
+set(appFrameDirDef ${CMAKE_SOURCE_DIR}/../../appFrameInstall)
+
+if(DEFINED ENV{appFrameDir})
+    set(appFrameDirDef "$ENV{appFrameDir}")
+endif()
+
+set(appFrameDir "${appFrameDirDef}" CACHE PATH "Path of appFrame install")
+
+message(STATUS "最终appFrameDir 是: ${appFrameDir}")
+
 SET(CMAKE_INSTALL_PREFIX )"<<strInstall<<R"()
 )";
 // if (bH) {

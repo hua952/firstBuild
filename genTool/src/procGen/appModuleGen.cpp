@@ -420,8 +420,12 @@ if (WIN32)
 	)";
 	// auto frameInPath = rGlobalFile.frameInstallPath ();
 	auto configClassName = rGlobalFile.configClassName ();
-	std::string incPath = rGlobalFile.frameIncPath ();
-	incPath += "/appFrame";
+	// std::string incPath = rGlobalFile.frameIncPath ();
+	//incPath += "/appFrame";
+
+    std::string incPath = R"(${firstBuildDir}/include/firstBuild
+    ${appFrameDir}/include/appFrame
+    )";
 	os<<szC2<<std::endl;
 	if (pPmp) {
 		os<<"    ${CMAKE_SOURCE_DIR}/gen/defMsg/src"<<std::endl;
@@ -433,7 +437,8 @@ if (WIN32)
 	auto prjName = rGlobalFile.projectName ();
 	os<<")"<<std::endl;
 
-	auto libPath = rGlobalFile.frameLibPath ();
+	// auto libPath = rGlobalFile.frameLibPath ();
+	auto libPath = R"(set(libDir ${firstBuildDir}/lib ${appFrameDir}/lib))";
 
 	os<<"list(APPEND libPath "<<libPath<<")"<<std::endl
 	<<R"(link_directories(${libPath} ${libDep})

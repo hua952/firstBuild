@@ -1328,9 +1328,9 @@ target_include_directories(${prjName} PRIVATE
 			os<<R"(${CMAKE_SOURCE_DIR}/protobufSer/src)";
 		}
 							os<<R"(src
+							${firstBuildDir}/include/firstBuild
+                            ${appFrameDir}/include/appFrame
 							)";
-							os<<framePath<<"/include/appFrame"<<std::endl;
-
 	bool bWProto = ((structBadyTime_proto == bt));
 	if (bWProto) {
 		os<<R"(src/protobuf

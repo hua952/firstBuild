@@ -14,8 +14,8 @@ int main (int nC, char* argS [])
 	do {
 		auto& rC = std::cout;
 
-		std::string incDir = R"(${firstBuildInc})";
-		std::string libDir = R"(${firstBuildLib})";
+		std::string incDir = R"(${firstBuildDir}/include/firstBuild)";
+		std::string libDir = R"(${firstBuildDir}/lib)";
 		std::string strFile;
 		std::string projectDir;
 		std::string projectName;

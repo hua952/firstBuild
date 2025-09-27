@@ -57,8 +57,22 @@ int xmlMsgFileLoad:: xmlLoad (const char* szPmpName, const char* szFile, msgPmpF
 {
     int   nRet = 0;
 	do {
-		rapidxml::file<> fdoc(szFile);
-		nRet = xmlLoadFromStr (szPmpName,fdoc.data (), rPmp);
+		try {
+			rapidxml::file<> fdoc(szFile);
+		    nRet = xmlLoadFromStr (szPmpName,fdoc.data (), rPmp);
+		}
+		catch (const std::runtime_error& e) {
+			// 捕获 runtime_error 异常
+			std::cerr << "捕获到 runtime_error: " << e.what() << std::endl;
+			nRet = 1;
+			break;
+		}
+		catch (...) {
+			// 捕获所有其他未处理的异常（可选）
+			std::cerr << "捕获到未知异常" << std::endl;
+			nRet = 2;
+			break;
+		}
 	} while (0);
 	return nRet;
 }
