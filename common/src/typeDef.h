@@ -18,6 +18,7 @@ typedef char chart;
 
 typedef ubyte* pubyte;
 //typedef char*  pChar;
+typedef const char*  ccharPt;
 typedef void* PVoid;
 
 typedef uword loopHandleType;

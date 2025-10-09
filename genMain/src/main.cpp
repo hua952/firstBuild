@@ -39,6 +39,17 @@ set(rcS)
 file(GLOB srcS src/*.cpp)
 file(GLOB rcS src/*.rc)
 set(osSrc)
+set(firstBuildDirDef ${CMAKE_SOURCE_DIR}/../firstBuildInstall)
+
+if(DEFINED ENV{firstBuildDir})
+    set(firstBuildDirDef "$ENV{firstBuildDir}")
+endif()
+
+set(firstBuildDir "${firstBuildDirDef}" CACHE PATH "Path of firstBuild install")
+
+# 使用变量
+message(STATUS "最终firstBuildDir是: ${firstBuildDir}")
+
 if (UNIX)
     MESSAGE(STATUS "unix")
 	add_definitions(-w)
@@ -60,13 +71,18 @@ endif ()
 
 # include_directories()
 
+link_directories(
+    ${firstBuildDir}/lib
+)
 add_executable (${prjName} )";
 if (g_mfc) {
 	of<<"WIN32 ";
 }
 of<<R"(${srcS} ${rcS})
-# target_include_directories(${prjName} PRIVATE src)
-# target_link_libraries(${prjName} PRIVATE  common cLog)
+target_include_directories(${prjName} PRIVATE
+    ${firstBuildDir}/include/firstBuild
+)
+target_link_libraries(${prjName} PRIVATE  common)
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 		)";
 	} while (0);
