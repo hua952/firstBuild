@@ -67,6 +67,11 @@ int  appModuleGen:: genExportFunH ()
 		std::string strFile = srcDir ();
 		create_directories (strFile);
 		strFile += "/exportFun.h";
+        auto bE = isPathExit (strFile.c_str());
+		if (bE) {
+			nRet = 0;
+			break;
+		}
 		std::ofstream os (strFile.c_str ());
 		if (!os) {
 			rError ("open file for write error fileName = "<<strFile.c_str ());
@@ -92,6 +97,56 @@ extern "C"
     return nRet;
 }
 
+int  appModuleGen:: genInitUserCpp ()
+{
+    int  nRet = 0;
+    do {
+        std::string strMgrClassName = m_appData.appName (); 
+        strMgrClassName += "WorkerMgr";
+
+        std::string strFile = srcDir ();
+        strFile += "/";
+        strFile += strMgrClassName;
+        strFile += "User.cpp";
+        auto bE = isPathExit (strFile.c_str());
+        if (bE) {
+            nRet = 0;
+            break;
+        }
+        std::ofstream os (strFile.c_str ());
+        if (!os) {
+            rError ("open file for write error fileName = "<<strFile.c_str ());
+            nRet = 1;
+            break;
+        }
+os<<R"(#include <iostream>
+#include <cstring>
+#include <string>
+#include "exportFun.h"
+#include "msg.h"
+#include "myAssert.h"
+#include "logicWorker.h"
+#include "logicWorkerMgr.h"
+#include "tSingleton.h"
+#include "gLog.h"
+#include ")"<<strMgrClassName<<R"(.h"
+
+int )"<<strMgrClassName<<R"(::initLogicUser (int cArg, char** argS, ForLogicFun* pForLogic, int cDefArg, char** defArgS)
+{
+    int nRet = 0;
+    do {
+    } while(0);
+    return nRet;
+}
+
+void )"<<strMgrClassName<<R"(::onAppExit()
+{
+}
+)";
+    } while (0);
+    return nRet;
+}
+
 int appModuleGen:: genExportFunCpp ()
 {
     int  nRet = 0;
@@ -101,6 +156,11 @@ int appModuleGen:: genExportFunCpp ()
 
 		std::string strFile = srcDir ();
 		strFile += "/exportFun.cpp";
+        auto bE = isPathExit (strFile.c_str());
+		if (bE) {
+			nRet = 0;
+			break;
+		}
 		std::ofstream os (strFile.c_str ());
 		if (!os) {
 			rError ("open file for write error fileName = "<<strFile.c_str ());
@@ -166,6 +226,8 @@ void onLoopEnd	(serverIdType	fId)
 
 void  beforeUnload()
 {
+	auto &rMgr = tSingleton<)"<<strMgrClassName<<R"(>::single();
+    rMgr.onAppExit();
 	std::cout<<"In   beforeUnload"<<std::endl;
 }
 int   onRecPacket(serverIdType	fId, packetHead* pack)
@@ -319,6 +381,12 @@ int   appModuleGen:: startGen ()
 		if (nR) {
 			rError(" genWinDef return error nR = "<<nR);
 			nRet = 4;
+			break;
+		}
+        nR = genInitUserCpp ();
+        if (nR) {
+			rError(" genInitUserCpp return error nR = "<<nR);
+			nRet = 6;
 			break;
 		}
 		genBashFile ();

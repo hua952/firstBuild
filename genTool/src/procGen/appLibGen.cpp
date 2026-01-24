@@ -221,6 +221,8 @@ class {modName}WorkerMgr:public logicWorkerMgr
 {{
 public:
 	int initLogicGen (int cArg, char** argS, ForLogicFun* pForLogic, int cDefArg, char** defArgS) override;
+    int initLogicUser (int cArg, char** argS, ForLogicFun* pForLogic, int cDefArg, char** defArgS);
+    void onAppExit();
 {serverS}
 private:
 }};
@@ -272,6 +274,7 @@ int  appLibGen:: genWorkerMgrCpp ()
 		// auto haveMsg = rGlobalFile.haveMsg();
 		// if (haveMsg){
 
+        auto  strConfigClassName = rGlobalFile.configClassName ();
 		auto pPmp = rGlobalFile.findMsgPmp ("defMsg");
 		if (pPmp ) {
 			incRpcH= R"(#include "rpcInfo.h")";
@@ -279,7 +282,7 @@ int  appLibGen:: genWorkerMgrCpp ()
 		const uword maxPairNum = 0x2000;
 		const uword maxMsgNum = maxPairNum * 2;
 		auto tempBuf = std::make_unique<uword[]>(maxMsgNum);
-		auto nR = getDefProc (tempBuf.get(), maxMsgNum);
+		nR = getDefProc (tempBuf.get(), maxMsgNum);
 		myAssert (nR < maxMsgNum);
 		nR = m_defProcMap.init((defProcMap::NodeType*)(tempBuf.get()), nR/2);
 		myAssert (0 == nR);
@@ -289,25 +292,56 @@ int  appLibGen:: genWorkerMgrCpp ()
 		fmt::print(osMgrC, R"(#include "{modName}WorkerMgr.h"
 #include "logicFrameConfig.h"
 #include "tSingleton.h"
+#include "{configClassName}.h"
 {incRpcH}
 
 int {modName}WorkerMgr::initLogicGen (int cArg, char** argS, ForLogicFun* pForLogic, int cDefArg, char** defArgS)
 {{
 	auto& rConfig = tSingleton<logicFrameConfig>::single ();
+    tSingleton<{configClassName}>::createSingleton ();
+    auto& rUserConfig = tSingleton<{configClassName}>::single ();
 	int nRet = 0;
 	do {{
+        int nR = rUserConfig.procCmdArgS (cDefArg, defArgS);
+        if (nR) {{
+            nRet = 1;
+            break;
+        }}
+        nR = rUserConfig.procCmdArgS (cArg, argS);
+        if (nR) {{
+            nRet = 2;
+            break;
+        }}
+
+        std::string userConfigFile = rConfig.projectInstallDir();
+        std::string strUserConfigFile = "userConfig.txt";
+        auto szUserConfigFile = rConfig.userConfigFile ();
+        if (szUserConfigFile) {{
+            if (strlen(szUserConfigFile)) {{
+                strUserConfigFile = szUserConfigFile;
+            }}
+        }}
+		userConfigFile += "/config/";
+
+		userConfigFile += strUserConfigFile;
+		rUserConfig.loadConfig (userConfigFile.c_str());
+		nR = rUserConfig.procCmdArgS (cArg, argS);
+
 		auto serverGroupNum = rConfig.serverGroupNum ();
 		auto serverGroups = rConfig.serverGroups ();
 		for (decltype (serverGroupNum) i = 0; i < serverGroupNum; i++) {{
 			{newServers}
 		}}
 		{initMsg}
-		
+		if (initLogicUser(cArg, argS, pForLogic, cDefArg, defArgS)) {{
+            nRet = 9;
+            break;
+       }}
 	}} while (0);
 	return nRet;
 }}
 
-)", fmt::arg("modName", m_appData.appName()), fmt::arg("incRpcH", incRpcH), fmt::arg("newServers", serVar.str().c_str()), fmt::arg("initMsg", strInitMsg));
+)", fmt::arg("modName", m_appData.appName()), fmt::arg("configClassName", strConfigClassName), fmt::arg("incRpcH", incRpcH), fmt::arg("newServers", serVar.str().c_str()), fmt::arg("initMsg", strInitMsg));
 
 
     } while (0);
@@ -977,6 +1011,9 @@ int main(int cArg, char** argS)
 	ws<<"start main"<<std::endl;
 	int nRet = 0;
 	nRet = beginMain(cArg, argS);
+
+    typedef void (*afterAllLoopEndBeforeExitAppFT)();
+    afterAllLoopEndBeforeExitAppFT funAfterAllLoopEndBeforeExitApp = nullptr;
 	do {
 		if (nRet) {
 			ws<<" beginMain error nRet = "<<nRet<<std::endl;
@@ -1086,6 +1123,8 @@ int main(int cArg, char** argS)
 	
 	typedef int (*getServerGroupInfoFT)(uword, ubyte*, ubyte*);
 	auto funGetServerGroupInfo = (getServerGroupInfoFT)(getFun(handle, "getServerGroupInfo"));
+    funAfterAllLoopEndBeforeExitApp = (afterAllLoopEndBeforeExitAppFT)(getFun(handle, "afterAllLoopEndBeforeExitApp"));
+
 	ubyte beginId = 0;
 	ubyte runNum = 0;
 	auto  getGroupInfoRet = funGetServerGroupInfo ()"<<mainLoopGroupId<<R"(, &beginId, &runNum);
@@ -1120,6 +1159,9 @@ int main(int cArg, char** argS)
 				std::cout<<pTemp<<std::endl;
 			}while(0);
 		}
+    if (funAfterAllLoopEndBeforeExitApp) {
+        funAfterAllLoopEndBeforeExitApp();
+    }
 		endMain();
 	} while (0);
 	std::this_thread::sleep_for(std::chrono::microseconds (1000000));

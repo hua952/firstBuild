@@ -81,7 +81,7 @@ set(firstBuildDir "${firstBuildDirDef}" CACHE PATH "Path of firstBuild install")
 
 message(STATUS "最终firstBuildDir是: ${firstBuildDir}")
 
-set(appFrameDirDef ${CMAKE_SOURCE_DIR}/../../appFrameInstall)
+set(appFrameDirDef ${CMAKE_SOURCE_DIR}/../../firstBuildInstall)
 
 if(DEFINED ENV{appFrameDir})
     set(appFrameDirDef "$ENV{appFrameDir}")

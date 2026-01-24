@@ -1,0 +1,12 @@
+build
+bin
+build/#
+bin/#
+.cache/#
+compile_commands.json
+CMakeFiles/
+*.vcxproj
+*.cmake
+*.filters
+CMakeCache.txt
+appFrame.sln

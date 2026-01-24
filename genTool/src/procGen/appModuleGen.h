@@ -27,6 +27,7 @@ private:
 	int genExportFunH ();
 	int genBashFile ();
 	int genExportFunCpp ();
+	int genInitUserCpp ();
 	int genWinDef ();
 	int  versFileGen ();
 	int procMsgReg (serverFile* pServer, const procRpcNode& rProcRpc, const char* szMsgDir);
