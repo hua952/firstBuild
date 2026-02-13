@@ -49,7 +49,10 @@ public:
     void  setGenPath (const char* v);
     const char*  srcPath ();
     void  setSrcPath (const char* v);
+    const char*  appUserWorkerMgrClassName ();
+    void  setAppUserWorkerMgrClassName (const char* v);
 private:
+    std::unique_ptr <char[]>  m_appUserWorkerMgrClassName;
     std::unique_ptr <char[]>  m_srcPath;
     std::unique_ptr <char[]>  m_genPath;
 	std::unique_ptr <char[]>  m_mainLoopGroupId;

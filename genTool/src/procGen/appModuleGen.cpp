@@ -97,17 +97,52 @@ extern "C"
     return nRet;
 }
 
+int  appModuleGen:: genInitUserH()
+{
+    int  nRet = 0;
+    do {
+        std::string strMgrClassName = m_appData.appUserWorkerMgrClassName (); 
+        std::string strFile = srcDir ();
+        strFile += "/";
+        strFile += strMgrClassName;
+        strFile += ".h";
+        auto bE = isPathExit (strFile.c_str());
+        if (bE) {
+            nRet = 0;
+            break;
+        }
+        std::ofstream os (strFile.c_str ());
+        if (!os) {
+            rError ("open file for write error fileName = "<<strFile.c_str ());
+            nRet = 1;
+            break;
+        }
+os<<R"(#include <iostream>
+#include "logicWorkerMgr.h"
+
+class ")"<<strMgrClassName<<R"(:public IUserLogicWorkerMgr"
+{
+public:
+    int initLogicUser (int cArg, char** argS, ForLogicFun* pForLogic, int cDefArg, char** defArgS);
+    void onAppExit() override;
+};
+)";
+
+    } while (0);
+    return nRet;
+}
+
 int  appModuleGen:: genInitUserCpp ()
 {
     int  nRet = 0;
     do {
-        std::string strMgrClassName = m_appData.appName (); 
-        strMgrClassName += "WorkerMgr";
+        std::string strMgrClassName = m_appData.appUserWorkerMgrClassName (); 
+        // strMgrClassName += "WorkerMgr";
 
         std::string strFile = srcDir ();
         strFile += "/";
         strFile += strMgrClassName;
-        strFile += "User.cpp";
+        strFile += ".cpp";
         auto bE = isPathExit (strFile.c_str());
         if (bE) {
             nRet = 0;
@@ -168,6 +203,8 @@ int appModuleGen:: genExportFunCpp ()
 			break;
 		}
 
+        std::string strUserMgrClassName = m_appData.appUserWorkerMgrClassName (); 
+
 		os<<R"(#include <iostream>
 #include <cstring>
 #include <string>
@@ -179,6 +216,7 @@ int appModuleGen:: genExportFunCpp ()
 #include "tSingleton.h"
 #include "gLog.h"
 #include ")"<<strMgrClassName<<R"(.h"
+#include ")"<<strUserMgrClassName<<R"(.h"
 
 dword afterLoad(int nArgC, char** argS, ForLogicFun* pForLogic, int nDefArgC, char** defArgS, char* taskBuf, int taskBufSize)
 {
@@ -186,6 +224,8 @@ dword afterLoad(int nArgC, char** argS, ForLogicFun* pForLogic, int nDefArgC, ch
 	tSingleton<)"<<strMgrClassName<<R"(>::createSingleton();
 	auto &rMgr = tSingleton<)"<<strMgrClassName<<R"(>::single();
 	logicWorkerMgr::s_mgr = &rMgr;
+    static )"<<strUserMgrClassName <<R"( sUserMgr;
+    rMgr.setIUserLogicWorkerMgr (&sUserMgr);
 	return rMgr.initLogicWorkerMgr (nArgC, argS, pForLogic, nDefArgC, defArgS, taskBuf, taskBufSize);
 }
 
@@ -383,10 +423,16 @@ int   appModuleGen:: startGen ()
 			nRet = 4;
 			break;
 		}
-        nR = genInitUserCpp ();
+        nR = genInitUserH ();
         if (nR) {
 			rError(" genInitUserCpp return error nR = "<<nR);
 			nRet = 6;
+			break;
+		}
+        nR = genInitUserCpp ();
+        if (nR) {
+			rError(" genInitUserCpp return error nR = "<<nR);
+			nRet = 7;
 			break;
 		}
 		genBashFile ();

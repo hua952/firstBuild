@@ -28,6 +28,9 @@ void  appFile::setAppName (const char* v)
 	std::string str = "appTmpId_";
 	str += v;
 	setAppGroupId (str.c_str());
+    std::string strUserWorkerMgrClassName = v;
+    strUserWorkerMgrClassName += "UserWorkerMgr";
+    setAppUserWorkerMgrClassName (strUserWorkerMgrClassName.c_str());
 }
 /*
 appFile::moduleFileNameSet&  appFile:: moduleFileNameS ()
@@ -230,5 +233,15 @@ const char*  appFile:: srcPath ()
 void  appFile:: setSrcPath (const char* v)
 {
     strCpy (v, m_srcPath);
+}
+
+const char*  appFile:: appUserWorkerMgrClassName ()
+{
+    return m_appUserWorkerMgrClassName.get ();
+}
+
+void  appFile:: setAppUserWorkerMgrClassName (const char* v)
+{
+    strCpy (v, m_appUserWorkerMgrClassName);
 }
 

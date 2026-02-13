@@ -221,7 +221,6 @@ class {modName}WorkerMgr:public logicWorkerMgr
 {{
 public:
 	int initLogicGen (int cArg, char** argS, ForLogicFun* pForLogic, int cDefArg, char** defArgS) override;
-    int initLogicUser (int cArg, char** argS, ForLogicFun* pForLogic, int cDefArg, char** defArgS);
     void onAppExit();
 {serverS}
 private:
@@ -333,7 +332,7 @@ int {modName}WorkerMgr::initLogicGen (int cArg, char** argS, ForLogicFun* pForLo
 			{newServers}
 		}}
 		{initMsg}
-		if (initLogicUser(cArg, argS, pForLogic, cDefArg, defArgS)) {{
+		if (m_pIUserLogicWorkerMgr->initLogicUser(cArg, argS, pForLogic, cDefArg, defArgS)) {{
             nRet = 9;
             break;
        }}
