@@ -134,6 +134,10 @@ void  serverFile::setServerName (const char* v)
 		strFrameDec += strFrame;
 		strFrameDec += R"( (logicServer& rServer))";
 		setFrameFunDec (strFrameDec.c_str ());
+
+        std::string strDefUserLogicClass = v;
+        strDefUserLogicClass += "UserLogic";
+        setDefUserLogicClassName (strDefUserLogicClass.c_str());
 	}
 }
 
@@ -335,5 +339,25 @@ const char*  serverFile:: strServerGroupId ()
 void  serverFile:: setStrServerGroupId (const char* v)
 {
     strCpy (v, m_strServerGroupId);
+}
+
+const char*  serverFile:: userLogicClassName ()
+{
+    return m_userLogicClassName ? m_userLogicClassName.get () : m_defUserLogicClassName.get();
+}
+
+void  serverFile:: setUserLogicClassName (const char* v)
+{
+    strCpy (v, m_userLogicClassName);
+}
+
+const char*  serverFile:: defUserLogicClassName ()
+{
+    return m_defUserLogicClassName.get ();
+}
+
+void  serverFile:: setDefUserLogicClassName (const char* v)
+{
+    strCpy (v, m_defUserLogicClassName);
 }
 

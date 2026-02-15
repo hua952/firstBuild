@@ -221,7 +221,7 @@ class {modName}WorkerMgr:public logicWorkerMgr
 {{
 public:
 	int initLogicGen (int cArg, char** argS, ForLogicFun* pForLogic, int cDefArg, char** defArgS) override;
-    void onAppExit();
+    // void onAppExit();
 {serverS}
 private:
 }};
@@ -432,9 +432,6 @@ class {serverName}:public {pubClass}
 public:
 	int onWorkerInitGen(ForLogicFun* pForLogic) override;
 	int onWorkerInit(ForLogicFun* pForLogic) override;
-	int onLoopBegin() override;
-	int onLoopEnd() override;
-	int onLoopFrame() override;
 	int onCreateChannelRet(const channelKey& rKey, udword result) override;
 	{procMsg}
 private:

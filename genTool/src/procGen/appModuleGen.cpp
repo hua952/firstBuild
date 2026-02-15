@@ -120,7 +120,7 @@ int  appModuleGen:: genInitUserH()
 os<<R"(#include <iostream>
 #include "logicWorkerMgr.h"
 
-class ")"<<strMgrClassName<<R"(:public IUserLogicWorkerMgr"
+class )"<<strMgrClassName<<R"(:public IUserLogicWorkerMgr
 {
 public:
     int initLogicUser (int cArg, char** argS, ForLogicFun* pForLogic, int cDefArg, char** defArgS);
@@ -267,7 +267,8 @@ void onLoopEnd	(serverIdType	fId)
 void  beforeUnload()
 {
 	auto &rMgr = tSingleton<)"<<strMgrClassName<<R"(>::single();
-    rMgr.onAppExit();
+    auto pUserMgr = rMgr.getIUserLogicWorkerMgr ();
+    pUserMgr->onAppExit();
 	std::cout<<"In   beforeUnload"<<std::endl;
 }
 int   onRecPacket(serverIdType	fId, packetHead* pack)
@@ -607,6 +608,7 @@ int  appModuleGen:: genServer (serverFile& rServer)
 			nRet = 2;
 			break;
 		}
+        /*
 		nR = genOnLoopBegin (rServer);
 		if (nR) {
 			nRet = 3;
@@ -622,11 +624,118 @@ int  appModuleGen:: genServer (serverFile& rServer)
 			nRet = 5;
 			break;
 		}
-		nR = genPackFun (rServer);
-		if (nR) {
+        */
+        nR = genUserLogicH (rServer);
+        if (nR) {
 			nRet = 6;
 			break;
+        }
+        nR = genUserLogicCpp (rServer);
+        if (nR) {
+			nRet = 7;
+			break;
+        }
+		nR = genPackFun (rServer);
+		if (nR) {
+			nRet = 8;
+			break;
 		}
+    } while (0);
+    return nRet;
+}
+
+int   appModuleGen:: genUserLogicH (serverFile& rServer)
+{
+    int   nRet = 0;
+    do {
+        auto serverName = rServer.serverName ();
+		std::string proc = srcDir ();
+		proc += serverName;
+		create_directories (proc);
+		proc += "/";
+        auto userLogicClassName = rServer.userLogicClassName ();
+        proc += userLogicClassName;
+		proc += ".h";
+		if (isPathExit (proc.c_str())) {
+			nRet = 0;
+			break;
+		}
+		std::ofstream os (proc.c_str ());
+		if (!os) {
+			rError ("open file : "<<proc.c_str ());
+			nRet = 1;
+		}
+		fmt::print(os, R"(#include "logicWorker.h"
+
+class {serverName};
+class {userLogicClassName}: public IUserLogicWorker
+{{
+public:
+    {userLogicClassName} ({serverName}& rServer);
+	int onLoopBegin() override;
+	int onLoopEnd() override;
+	int onLoopFrame() override;
+    {serverName}& getServer(){{return m_r{serverName};}}
+private:
+    {serverName}& m_r{serverName};
+}};
+)", fmt::arg("serverName", serverName), fmt::arg("userLogicClassName", userLogicClassName));
+    } while (0);
+    return nRet;
+}
+
+int   appModuleGen:: genUserLogicCpp (serverFile& rServer)
+{
+    int   nRet = 0;
+    do {
+        auto serverName = rServer.serverName ();
+		std::string proc = srcDir ();
+		proc += serverName;
+		create_directories (proc);
+		proc += "/";
+        auto userLogicClassName = rServer.userLogicClassName ();
+        proc += userLogicClassName;
+		proc += ".cpp";
+		if (isPathExit (proc.c_str())) {
+			nRet = 0;
+			break;
+		}
+		std::ofstream os (proc.c_str ());
+		if (!os) {
+			rError ("open file : "<<proc.c_str ());
+			nRet = 1;
+		}
+		fmt::print(os, R"(#include "{serverName}.h"
+#include "{userLogicClassName}.h"
+
+{userLogicClassName}::{userLogicClassName} ({serverName}& rServer):m_r{serverName}(rServer)
+{{
+}}
+
+int {userLogicClassName}::onLoopBegin()
+{{
+    int nRet = 0;
+    do {{
+    }} while (0);
+    return nRet;
+}}
+
+int {userLogicClassName}::onLoopFrame()
+{{
+    int nRet = 0;
+    do {{
+    }} while (0);
+    return nRet;
+}}
+
+int {userLogicClassName}::onLoopEnd()
+{{
+    int nRet = 0;
+    do {{
+    }} while (0);
+    return nRet;
+}}
+)", fmt::arg("serverName", serverName), fmt::arg("userLogicClassName", userLogicClassName));
     } while (0);
     return nRet;
 }
@@ -681,17 +790,20 @@ int   appModuleGen:: onWorkerInitGen (serverFile& rServer)
 			rError ("open file : "<<proc.c_str ());
 			nRet = 1;
 		}
+        auto userLogicClassName = rServer.userLogicClassName ();
 		fmt::print(os, R"(#include "{serverName}.h"
+#include "{userLogicClassName}.h"
 
 int {serverName}::onWorkerInit(ForLogicFun* pForLogic)
 {{
 	int nRet = 0;
 	do {{
+        m_pIUserLogicWorker = std::make_unique<{userLogicClassName}> (*this);
 	}} while (0);
 	return nRet;
 }}
 
-)", fmt::arg("serverName", serverName));
+)", fmt::arg("serverName", serverName), fmt::arg("userLogicClassName", userLogicClassName));
 
     } while (0);
     return nRet;

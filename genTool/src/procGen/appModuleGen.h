@@ -23,6 +23,8 @@ private:
 	int  genOnLoopFrame(serverFile& rServer);
 	int  onCreateChannelRetGen (serverFile& rServer);
 	int  onWorkerInitGen (serverFile& rServer);
+    int  genUserLogicH (serverFile& rServer);
+    int  genUserLogicCpp (serverFile& rServer);
 	int genServer (serverFile& rServer);
 	int genExportFunH ();
 	int genBashFile ();

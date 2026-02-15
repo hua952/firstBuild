@@ -98,7 +98,13 @@ public:
 	uword serverGroupId ();
 	void  setServerGroupId (uword v);
 	std::vector<std::string>&     attrs ();
+	const char*  defUserLogicClassName ();
+	void  setDefUserLogicClassName (const char* v);
+	const char*  userLogicClassName ();
+	void  setUserLogicClassName (const char* v);
 private:
+	std::unique_ptr <char[]>  m_userLogicClassName;
+	std::unique_ptr <char[]>  m_defUserLogicClassName;
 	std::vector<std::string>  m_attrs;
 	std::unique_ptr <char[]>  m_strServerGroupId;
 	std::unique_ptr <char[]>  m_frameFunDec;
