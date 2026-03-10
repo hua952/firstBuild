@@ -219,9 +219,6 @@ int   xmlMsgFileLoad:: onceRpcGroupLoad (rapidxml::xml_node<char>* pGroup, msgPm
 			nRet = 1;
 			break;
 		}
-		// auto&  rGroupMgr = tSingleton <msgGroupFileMgr>::single ();
-		// auto&  rRpcMgr = tSingleton <rpcFileMgr>::single ();
-		// auto&  rMsgMgr = tSingleton <msgFileMgr>::single ();
 
 		auto&  rGroupMgr = rPmp.msgGroupFileS ();
 		auto&  rRpcMgr = rPmp.rpcFileS();
@@ -230,9 +227,6 @@ int   xmlMsgFileLoad:: onceRpcGroupLoad (rapidxml::xml_node<char>* pGroup, msgPm
 		auto&  rMsgS = rMsgMgr.msgS ();
 		auto&  rRpcS = rRpcMgr.rpcS ();
 
-		// auto&  rMgr = tSingleton <structFileMgr>::single ().structS ();
-		// auto&  rVec = tSingleton <structFileMgr>::single ().structOrder();
-		// auto&  rRpcOrder = rRpcMgr.rpcOrder ();
 		auto&  rGroupS = rGroupMgr.msgGroupS ();
 		auto pGName = pGroup->name ();
 		auto pG = std::make_shared <msgGroupFile> ();
@@ -351,14 +345,17 @@ int   xmlMsgFileLoad:: onceRpcGroupLoad (rapidxml::xml_node<char>* pGroup, msgPm
 				nRet = 5;
 				break;
 			}
-			std::string strAskDec = "void ";
+			std::string strAskDec = "int ";
 			strAskDec += strMsgProc;
 			strAskDec += R"( ()";
+            std::string strAskArgsDec;
+            std::string strAskArgs;
 			bool askHasData = pAskMsg->hasData ();
 			if (askHasData) {
-				strAskDec += "const ";
-				strAskDec += pAskStructName;
-				strAskDec += "& rAsk ";
+				strAskArgsDec += "const ";
+				strAskArgsDec += pAskStructName;
+				strAskArgsDec += "& rAsk ";
+                strAskArgs += "rAsk";
 			}	
 			bool haveRetData = false;
 			auto pRet = pRpc->first_node("ret");
@@ -415,37 +412,41 @@ int   xmlMsgFileLoad:: onceRpcGroupLoad (rapidxml::xml_node<char>* pGroup, msgPm
 			std::string strRetMsgProc = "proc";
 			strRetMsgProc += pmRetName.get ();
 			pRetMsg->setMsgFunName (strRetMsgProc.c_str ());
-			std::string strDec = "void ";
+			std::string strDec = "int ";
 			strDec += strRetMsgProc;
 			strDec += R"( ()";
+            std::string strArgsDec;
+            std::string strRetArg;
 			if (askHasData) {
-				strDec += "const ";
-				strDec += strAskName;
-				strDec += "& rAsk";
+				strArgsDec += "const ";
+				strArgsDec += strAskName;
+				strArgsDec += "& rAsk";
+                strRetArg += "rAsk";
 			}
 			auto retHasData = pRetMsg->hasData ();
 			if (retHasData) {
 				if (askHasData) {
-					strAskDec += ", ";
-					strDec += ", ";
+					strAskArgsDec += ", ";
+                    strAskArgs += ", ";
+					strArgsDec += ", ";
+					strRetArg += ", ";
 				}
-				strAskDec += strRetName;
-				strAskDec += "& rRet";
+				strAskArgsDec += strRetName;
+				strAskArgsDec += "& rRet";
 
-				strDec += strRetName;
-				strDec += "& rRet";
-				/*
-				if (isRootRpc ) {
-					strAskDec += ", channelKey& rCh";
-					strDec += ", channelKey& rCh";
-				}
-				*/
+                strAskArgs += "rRet";
+				strArgsDec += strRetName;
+				strArgsDec += "& rRet";
+                strRetArg += "rRet";
 			}
 			auto retNeetSe = pRetMsg->neetSession ();
 			if (retNeetSe) {
-				strDec += ", serverIdType srcSer, SessionIDType seId";
+				strArgsDec += ", serverIdType srcSer, SessionIDType seId";
+				strRetArg  += ", srcSer, seId";
 			}
-
+            pRetMsg->setProcMsgFunArgDec (strArgsDec.c_str());
+            pRetMsg->setProcMsgFunArg(strRetArg.c_str());
+            strDec += strArgsDec;
 			strDec += ")";
 			pRetMsg->setMsgFunDec (strDec.c_str ());
 			auto retRet = rMsgS.insert (std::make_pair (strRetName, pRetMsg));
@@ -454,13 +455,14 @@ int   xmlMsgFileLoad:: onceRpcGroupLoad (rapidxml::xml_node<char>* pGroup, msgPm
 					nRet = 9;
 					break;
 				}
-				// rMgr [strRetName] = pS;
-				// rVec.push_back (pS);
 			}
 			auto askNeetSe = pAskMsg->neetSession ();
 			if (askNeetSe) {
-				strAskDec += ", serverIdType srcSer, SessionIDType seId";
+				strAskArgsDec += ", serverIdType srcSer, SessionIDType seId";
 			}
+            pAskMsg->setProcMsgFunArgDec (strAskArgsDec.c_str());
+            pAskMsg->setProcMsgFunArg(strAskArgs.c_str());
+			strAskDec += strAskArgsDec;
 			strAskDec += ")";
 			pAskMsg->setMsgFunDec (strAskDec.c_str ());
 		}

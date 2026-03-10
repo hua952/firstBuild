@@ -578,7 +578,7 @@ static int )"<<pPackFun<<
 	auto pServer = workerMgr.allServers()[pArg->handle];
 	auto pRealServer = dynamic_cast<)"<<serverName<<R"(*>(pServer);
 	myAssert (pRealServer);
-	pRealServer->)"<<msgProcFun <<R"(()";
+	auto nR = pRealServer->)"<<msgProcFun <<R"(()";
 	auto askHasData = pAskMsg->hasData ();
 	if (askHasData) {
 		os<<R"(*ask.pack())";
@@ -609,6 +609,11 @@ static int )"<<pPackFun<<
 	}
 	os<<R"(
 	ask.pop ();
+    if (procPacketFunRetType_exitNow & nR) [[unlikely]]{
+        nRet |= procPacketFunRetType_exitNow;
+    } else if (procPacketFunRetType_exitAfterLoop & nR) [[unlikely]]{
+        nRet |= procPacketFunRetType_exitAfterLoop ;
+    }
 	return nRet;
 }
 )";

@@ -93,6 +93,30 @@ void  msgFile:: setMsgFunDec (const char* v)
     strCpy (v, m_msgFunDec);
 }
 
+const char*  msgFile:: procMsgFunArgDec ()
+{
+    return m_procMsgFunArgDec.get ();
+}
+
+void  msgFile:: setProcMsgFunArgDec (const char* v)
+{
+    if (strlen(v)) {
+        strCpy (v, m_procMsgFunArgDec);
+    }
+}
+
+const char*  msgFile:: procMsgFunArg ()
+{
+    return m_procMsgFunArg.get ();
+}
+
+void  msgFile:: setProcMsgFunArg (const char* v)
+{
+    if (strlen(v)) {
+        strCpy (v, m_procMsgFunArg);
+    }
+}
+
 const char*  msgFile:: msgName ()
 {
     return m_msgName.get ();

@@ -36,7 +36,13 @@ public:
 	void  setMsgFullName (const char* v);
 	const char*  defProServerTmpId ();
 	void  setDefProServerTmpId (const char* v);
+	const char*  procMsgFunArg ();
+	void  setProcMsgFunArg (const char* v);
+	const char*  procMsgFunArgDec ();
+	void  setProcMsgFunArgDec (const char* v);
 private:
+	std::unique_ptr <char[]>  m_procMsgFunArgDec;
+	std::unique_ptr <char[]>  m_procMsgFunArg;
 	std::unique_ptr <char[]>  m_defProServerTmpId;
 	std::unique_ptr <char[]>  m_msgFullName;
 	std::unique_ptr <char[]>  m_serFunStuToName;

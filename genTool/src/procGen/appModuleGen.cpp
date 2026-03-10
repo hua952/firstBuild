@@ -945,7 +945,7 @@ int appModuleGen::procMsgReg (serverFile* pServer, const procRpcNode& rProcRpc, 
 		auto askMsgStructName = pRpc->askMsgName ();
 		auto retMsgStructName = pRpc->retMsgName ();
 		// auto isChannel = pRpc->isChannel ();
-		auto msgProcFun = pMsg->msgFunName ();
+		// auto msgProcFun = pMsg->msgFunName ();
 		auto pAskMsg = rMsgMgr.findMsg (askMsgStructName);
 		myAssert (pAskMsg);
 		auto pRetMsg = rMsgMgr.findMsg (retMsgStructName);
@@ -970,6 +970,8 @@ int appModuleGen::procMsgReg (serverFile* pServer, const procRpcNode& rProcRpc, 
 		auto pGSrcName = pGroup->rpcSrcFileName ();
 		std::string strDec;
 		
+        auto userLogicClassName = pServer->userLogicClassName ();
+
 		pMsg->getClassMsgFunDec (serverName, strDec);
 		ps<<R"(#include "tSingleton.h"
 #include "msg.h"
@@ -982,13 +984,28 @@ int appModuleGen::procMsgReg (serverFile* pServer, const procRpcNode& rProcRpc, 
 			ps<<R"(#include "loopHandleS.h"
 )";
 		//}
-
+auto procMsgFunArgDec = pMsg->procMsgFunArgDec ();
 ps<<R"(#include "logicWorker.h"
+#include ")"<<userLogicClassName<<R"(.h")"<<std::endl<<R"(
 #include ")"<<strMgrClassName<<R"(.h")"<<std::endl<<R"(
 #include ")"<<pGSrcName<<R"(.h")"<<std::endl<<std::endl
-		<<strDec<<R"(
+<<R"(static int s)"<<msgFunName <<R"( ()"<<userLogicClassName<<R"(& rLogic, )"<<serverName<<R"(& rServer)";
+if (procMsgFunArgDec) {
+    ps<<", "<<procMsgFunArgDec;
+}
+ps<<R"()
 {
 	gInfo("Rec )"<<msgFunName<<R"(");
+    return procPacketFunRetType_del;
+}
+)"<<strDec<<R"(
+{
+    return s)"<<msgFunName<<R"((*(dynamic_cast<)"<<userLogicClassName<<R"(*>(getIUserLogicWorker ())), *this)";
+    auto procMsgFunArg = pMsg->procMsgFunArg ();
+    if (procMsgFunArg) {
+        ps<<R"(,)"<<procMsgFunArg;
+    }
+    ps<<R"();
 }
 )";
 	} while (0);
