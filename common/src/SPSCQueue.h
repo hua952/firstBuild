@@ -192,7 +192,7 @@ public:
 
   size_t capacity() const noexcept { return capacity_ - 1; }
 
-private:
+protected:
 #ifdef __cpp_lib_hardware_interference_size
   static constexpr size_t kCacheLineSize =
       std::hardware_destructive_interference_size;
@@ -203,7 +203,7 @@ private:
   // Padding to avoid false sharing between slots_ and adjacent allocations
   static constexpr size_t kPadding = (kCacheLineSize - 1) / sizeof(T) + 1;
 
-private:
+protected:
   size_t capacity_;
   T *slots_;
 #if defined(__has_cpp_attribute) && __has_cpp_attribute(no_unique_address)
